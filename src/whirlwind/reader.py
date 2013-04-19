@@ -5,6 +5,7 @@ from tornado.iostream import BaseIOStream
 class ReadOnlyFileStream(BaseIOStream):
     def __init__(self, path):
         super(ReadOnlyFileStream, self).__init__()
+        self.name = path
         self.file = open(path, 'r')
 
     def fileno(self):
