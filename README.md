@@ -1,7 +1,8 @@
-Whisper-Tornado
-===============
+Whirlwind
+=========
 
-Aysnc read of whisper database.
+Aysnc reader of Whisper database for Tornado.
 
 Licence
 -------
+Apache Licence 2 © 2013 Mathieu Lecarme
