@@ -3,7 +3,6 @@ Large part of this code came from whisper.
 """
 import struct
 import time
-import functools
 from whisper import (
     metadataSize, archiveInfoSize, pointSize,
     archiveInfoFormat, metadataFormat,
@@ -19,14 +18,6 @@ from reader import ReadOnlyFileStream
 
 class Whisper(ReadOnlyFileStream):
     _header = None
-
-    def header(self, callback=None):
-        if not self._header:
-            self._build_header(callback=functools.partial(
-                callback, self._header))
-        else:
-            IOLoop.instance().add_callback(functools.partial(
-                callback, self._header))
 
     @coroutine
     def _build_header(self):
@@ -69,7 +60,7 @@ class Whisper(ReadOnlyFileStream):
         raise Return(self._header)
 
     @coroutine
-    def _fetch_archive(self, fromTime=0, untilTime=None):
+    def fetch(self, fromTime=0, untilTime=None):
         header = yield self._build_header()
         now = int(time.time())
         if untilTime is None:
@@ -123,7 +114,7 @@ class Whisper(ReadOnlyFileStream):
             points = (untilInterval - fromInterval) / step
             timeInfo = (fromInterval, untilInterval, step)
             valueList = [None] * points
-            raise Return(timeInfo, valueList)
+            raise Return((timeInfo, valueList))
 
         #Determine fromOffset
         timeDistance = fromInterval - baseInterval
@@ -181,6 +172,7 @@ if __name__ == "__main__":
     @coroutine
     def main():
         w = Whisper(sys.argv[1])
-        a = yield w._fetch_archive()
+        a = yield w.fetch()
+        print a
 
     IOLoop.instance().run_sync(main)
