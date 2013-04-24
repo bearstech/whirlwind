@@ -1,7 +1,12 @@
 Whirlwind
 =========
 
-Aysnc reader of Whisper database for Tornado.
+Reading Whisper database with Tornado.
+
+Status
+------
+
+Alpha, read only.
 
 Licence
 -------
