@@ -19,7 +19,8 @@ class Carbon(TCPServer):
 
     def __init__(self):
         super(Carbon, self).__init__()
-        self.redis = tornadoredis.Client()  # Mayebe some parameters
+        self.metrics = set()
+        self.redis = tornadoredis.Client()  # Maybe some parameters
         self.redis.connect()
         self.persist = Subprocess(["python", "-m",
                                    "whirlwind.tornado.carbon.persist"])
@@ -34,7 +35,9 @@ class Carbon(TCPServer):
                 stream.close()
             serialized = struct.pack('!ff', timestamp, value)
             pipe = self.redis.pipeline()
-            pipe.sadd('metrics', metric)  # [FIXME] local cache
+            if metric not in self.metrics:
+                pipe.sadd('metrics', metric)
+                self.metrics.add(metric)
             pipe.zadd(metric, timestamp, serialized)
             pipe.publish(metric, serialized)
             yield Task(pipe.execute)
