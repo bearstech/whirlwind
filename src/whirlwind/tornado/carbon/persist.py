@@ -15,6 +15,10 @@ METRIC_POINTS = 'carbon.points'
 
 
 class Persist(object):
+    """ Sequential writer for Carbon server.
+    The story is simple, fetch data from redis, write them, wait, loop.
+    This code is supervised by Carbon daemon.
+    """
 
     def __init__(self, path="/tmp/"):
         self.redis = Redis()
@@ -23,6 +27,7 @@ class Persist(object):
         self.redis.sadd(METRICS, METRIC_POINTS, METRIC_WRITE)
 
     def metric(self, name, value):
+        "Add some metrics : make your own dogfood, just before lunch."
         timestamp = time.time()
         serialized = struct.pack('!ff', timestamp, value)
         pipe = self.redis.pipeline()
@@ -52,7 +57,6 @@ class Persist(object):
             if not os.path.exists(f):
                 whisper.create(f, [(10, 1000)])  # [FIXME] hardcoded values
             whisper.update_many(f, [struct.unpack('!ff', a) for a in values])
-            print "Writing", metric
             if len(values):
                 self.redis.zrem(metric, *values)
         self.metric(METRIC_POINTS, points)

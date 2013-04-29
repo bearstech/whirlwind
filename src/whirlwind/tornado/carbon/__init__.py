@@ -12,12 +12,17 @@ def parse(line):
 
 
 class Carbon(TCPServer):
+    """Carbon daemon.
+    Listen the simple socket carbon protocol and feed the redis,
+    later, some writes will happens.
+    """
 
     def __init__(self):
         super(Carbon, self).__init__()
         self.redis = tornadoredis.Client()  # Mayebe some parameters
         self.redis.connect()
-        self.persist = Subprocess(["python", "-m", "whirlwind.tornado.carbon.persist"])
+        self.persist = Subprocess(["python", "-m",
+                                   "whirlwind.tornado.carbon.persist"])
 
     @coroutine
     def handle_stream(self, stream, address):
