@@ -2,6 +2,7 @@ import struct
 
 from tornado.tcpserver import TCPServer
 from tornado.gen import coroutine, Task
+from tornado.process import Subprocess
 import tornadoredis
 
 
@@ -16,6 +17,7 @@ class Carbon(TCPServer):
         super(Carbon, self).__init__()
         self.redis = tornadoredis.Client()  # Mayebe some parameters
         self.redis.connect()
+        self.persist = Subprocess(["python", "-m", "whirlwind.tornado.carbon.persist"])
 
     @coroutine
     def handle_stream(self, stream, address):
@@ -27,14 +29,14 @@ class Carbon(TCPServer):
                 stream.close()
             serialized = struct.pack('!ff', timestamp, value)
             pipe = self.redis.pipeline()
+            pipe.sadd('metrics', metric)  # [FIXME] local cache
             pipe.zadd(metric, timestamp, serialized)
             pipe.publish(metric, serialized)
             yield Task(pipe.execute)
-            print "hop"
 
 
 if __name__ == "__main__":
     from tornado.ioloop import IOLoop
     server = Carbon()
-    server.listen(8888)
+    server.listen(2003)
     IOLoop.instance().start()
