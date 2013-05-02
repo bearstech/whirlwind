@@ -17,13 +17,15 @@ class Carbon(TCPServer):
     later, some writes will happens.
     """
 
-    def __init__(self):
+    def __init__(self, persist=True):
         super(Carbon, self).__init__()
         self.metrics = set()
         self.redis = tornadoredis.Client()  # Maybe some parameters
         self.redis.connect()
-        self.persist = Subprocess(["python", "-m",
-                                   "whirlwind.tornado.carbon.persist"])
+        if persist:
+            self.persist = Subprocess(["python", "-m",
+                                       "whirlwind.tornado.carbon.persist"])
+            # [TODO] handle crash and restarting.
 
     @coroutine
     def handle_stream(self, stream, address):
