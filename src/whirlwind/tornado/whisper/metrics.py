@@ -1,22 +1,51 @@
 import os
 from os.path import splitext
+from tornado.gen import coroutine, Return, Task
+
+from __init__ import Whisper
 
 
 class Metrics(object):
     "A folder full of whisper files."
 
-    def __init__(self, path):
+    def __init__(self, path, redis):
         self.path = path
+        self.redis = redis
 
+    @coroutine
     def keys(self):
+        already = yield Task(self.redis.exists, 'metrics')
+        if already:
+            members = yield Task(self.redis.smembers, 'metrics')
+            raise Return(members)
+        keys = []
         for root, dirs, files in os.walk(self.path):
             key = '.'.join(root[len(self.path) + 1:].split('/'))
             for name in files:
                 db, ext = splitext(name)
                 if ext == ".wsp":
-                        yield '%s.%s' % (key, db)
+                    kk = '%s.%s' % (key, db)
+                    yield Task(self.redis.sadd, 'metrics', kk)
+                    keys.append(kk)
+        raise Return(keys)
 
+    def get(self, key):
+        return Whisper("%s/%s.wsp" % (self.path, "/".join(key.split('.'))))
 
 if __name__ == "__main__":
-    m = Metrics('/tmp/whisper')
-    print list(m.keys())
+    from tornado.ioloop import IOLoop
+    from tornado.gen import Callback, WaitAll
+    import tornadoredis
+
+    @coroutine
+    def main():
+        redis = tornadoredis.Client()  # Maybe some parameters
+        redis.connect()
+        m = Metrics('/tmp/whisper', redis)
+        keys = yield m.keys()
+        for k in keys:
+            m.get(k)._build_header(callback=(yield Callback(k)))
+        w = yield WaitAll(keys)
+        print w
+
+    IOLoop.instance().run_sync(main)
