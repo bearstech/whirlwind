@@ -13,7 +13,7 @@ from whisper import (
 )
 from tornado.gen import coroutine, Task, Return
 
-from reader import ReadOnlyFileStream
+from ..reader import ReadOnlyFileStream
 
 
 class Whisper(ReadOnlyFileStream):
