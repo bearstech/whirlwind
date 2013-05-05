@@ -93,15 +93,16 @@ class Whisper(ReadOnlyFileStream):
             if archive['retention'] >= diff:
                 break
 
-        a = yield self._archive(archive, fromTime, untilTime)
-        raise Return(a)
+        data = yield self._archive(archive, fromTime, untilTime)
+        raise Return(data)
 
     @coroutine
     def _archive(self, archive, fromTime, untilTime):
         """
-        Fetch data from a single archive. Note that checks for validity of the time
-        period requested happen above this level so it's possible to wrap around the
-        archive on a read and request data older than the archive's retention
+        Fetch data from a single archive. Note that checks for validity of
+        the time period requested happen above this level so it's possible
+        to wrap around the archive on a read and request data older than
+        the archive's retention
         """
         fromInterval = int(fromTime - (fromTime % archive['secondsPerPoint'])) + archive['secondsPerPoint']
         untilInterval = int(untilTime - (untilTime % archive['secondsPerPoint'])) + archive['secondsPerPoint']
@@ -135,10 +136,10 @@ class Whisper(ReadOnlyFileStream):
                                       untilOffset - fromOffset)
         else:  # We do wrap around the archive, so we need two reads
             archiveEnd = archive['offset'] + archive['size']
-        seriesString = yield Task(self.read_bytes, archiveEnd - fromOffset)
-        yield Task(self.seek, archive['offset'])
-        seriesString += yield Task(self.read_bytes,
-                                   untilOffset - archive['offset'])
+            seriesString = yield Task(self.read_bytes, archiveEnd - fromOffset)
+            yield Task(self.seek, archive['offset'])
+            seriesString += yield Task(self.read_bytes,
+                                       untilOffset - archive['offset'])
 
         # Now we unpack the series data we just read
         # (anything faster than unpack?)
