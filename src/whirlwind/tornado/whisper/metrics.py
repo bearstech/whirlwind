@@ -54,9 +54,9 @@ if __name__ == "__main__":
         redis = tornadoredis.Client()  # Maybe some parameters
         redis.connect()
         m = Metrics('/tmp/whisper', redis)
-        match = yield m.fetch('servers.*')
+        match = yield m.filter_keys('*.agents.*')
         print match
-        match = yield m.fetch('*.agents.*')
-        print match
+        values = yield m.fetch('*.agents.*')
+        print [(timeInfo, len(val)) for timeInfo, val in values]
 
     IOLoop.instance().run_sync(pattern)

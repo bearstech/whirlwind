@@ -1,6 +1,6 @@
 import fnmatch
 
-from tornado.gen import coroutine, Return, Task
+from tornado.gen import coroutine, Return, Task, Callback, WaitAll
 
 from ..grammar import grammar
 
@@ -38,11 +38,23 @@ class AbstractMetric(object):
     def keys(self):
         raise NotImplementedError()
 
+    def get(self, key):
+        raise NotImplementedError()
+
     @coroutine
-    def fetch(self, pattern):
+    def filter_keys(self, pattern):
         tokens = grammar.parseString(pattern)[0]
         if not tokens.pathExpression:
             raise NotImplementedError()
         keys = yield self.keys()
         m = match_entries(keys, tokens.pathExpression)
         raise Return(m)
+
+    @coroutine
+    def fetch(self, pattern, start=0, end=None):
+        keys = yield self.filter_keys(pattern)
+        for key in keys:
+            mesure = self.get(key)
+            mesure.fetch(start, end, callback=(yield Callback(key)))
+        values = yield WaitAll(keys)
+        raise Return(values)
