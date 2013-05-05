@@ -1,8 +1,10 @@
 import fnmatch
+import time
 
-from tornado.gen import coroutine, Return, Task, Callback, WaitAll
+from tornado.gen import coroutine, Return, Callback, WaitAll
 
 from ..grammar import grammar
+from ..attime import parseATTime
 
 
 def _deduplicate(entries):
@@ -33,6 +35,11 @@ def match_entries(entries, pattern):
         return matching
 
 
+def timestamp(datetime):
+    "Convert a datetime object into epoch time"
+    return time.mktime(datetime.timetuple())
+
+
 class AbstractMetric(object):
 
     def keys(self):
@@ -47,14 +54,16 @@ class AbstractMetric(object):
         if not tokens.pathExpression:
             raise NotImplementedError()
         keys = yield self.keys()
-        m = match_entries(keys, tokens.pathExpression)
-        raise Return(m)
+        entries = match_entries(keys, tokens.pathExpression)
+        raise Return(entries)
 
     @coroutine
-    def fetch(self, pattern, start=0, end=None):
+    def fetch(self, pattern, from_='-1d', until='now'):
         keys = yield self.filter_keys(pattern)
         for key in keys:
             mesure = self.get(key)
-            mesure.fetch(start, end, callback=(yield Callback(key)))
+            mesure.fetch(timestamp(parseATTime(from_)),
+                         timestamp(parseATTime(until)),
+                         callback=(yield Callback(key)))
         values = yield WaitAll(keys)
         raise Return(values)

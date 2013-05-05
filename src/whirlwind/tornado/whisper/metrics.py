@@ -34,6 +34,7 @@ class Metrics(AbstractMetric):
         return Whisper("%s/%s.wsp" % (self.path, "/".join(key.split('.'))))
 
 if __name__ == "__main__":
+    import time
     from tornado.ioloop import IOLoop
     from tornado.gen import Callback, WaitAll
     import tornadoredis
@@ -54,9 +55,14 @@ if __name__ == "__main__":
         redis = tornadoredis.Client()  # Maybe some parameters
         redis.connect()
         m = Metrics('/tmp/whisper', redis)
-        match = yield m.filter_keys('*.agents.*')
-        print match
-        values = yield m.fetch('*.agents.*')
-        print [(timeInfo, len(val)) for timeInfo, val in values]
+        chrono = time.time()
+        values = yield m.fetch('*.agents.*', from_='-2d')
+        score = time.time() - chrono
+        cpt = 0
+        for timeInfo, val in values:
+            l = len(val)
+            cpt += l
+            print timeInfo, l
+        print score, cpt, cpt / score
 
     IOLoop.instance().run_sync(pattern)
