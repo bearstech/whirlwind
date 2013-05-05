@@ -3,9 +3,10 @@ from os.path import splitext
 from tornado.gen import coroutine, Return, Task
 
 from __init__ import Whisper
+from ..metrics import AbstractMetric
 
 
-class Metrics(object):
+class Metrics(AbstractMetric):
     "A folder full of whisper files."
 
     def __init__(self, path, redis):
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     import tornadoredis
 
     @coroutine
-    def main():
+    def all_header():
         redis = tornadoredis.Client()  # Maybe some parameters
         redis.connect()
         m = Metrics('/tmp/whisper', redis)
@@ -46,6 +47,16 @@ if __name__ == "__main__":
         for k in keys:
             m.get(k)._build_header(callback=(yield Callback(k)))
         w = yield WaitAll(keys)
-        print w
+        print w, len(w)
 
-    IOLoop.instance().run_sync(main)
+    @coroutine
+    def pattern():
+        redis = tornadoredis.Client()  # Maybe some parameters
+        redis.connect()
+        m = Metrics('/tmp/whisper', redis)
+        match = yield m.fetch('servers.*')
+        print match
+        match = yield m.fetch('*.agents.*')
+        print match
+
+    IOLoop.instance().run_sync(pattern)
