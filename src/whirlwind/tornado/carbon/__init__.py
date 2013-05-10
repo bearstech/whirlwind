@@ -43,10 +43,3 @@ class Carbon(TCPServer):
             pipe.zadd(metric, timestamp, serialized)
             pipe.publish(metric, serialized)
             yield Task(pipe.execute)
-
-
-if __name__ == "__main__":
-    from tornado.ioloop import IOLoop
-    server = Carbon()
-    server.listen(2003)
-    IOLoop.instance().start()
