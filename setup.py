@@ -11,5 +11,6 @@ setup(name='whirlwind',
       requires=[
           'whisper',
           'pyparsing(==1.5.7)',
-          'pytz']
+          'pytz',
+          'bottle']
       )
