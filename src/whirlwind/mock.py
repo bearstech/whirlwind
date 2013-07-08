@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 
+from attime import parseATTime
 from perlin import SimplexNoise
 
 
@@ -8,12 +9,11 @@ def whisper_get(fromTime, untilTime=None, step=30):
     now = int(time.time())
     if untilTime is None:
         untilTime = now
-    elif type(untilTime) == datetime:
-        untilTime = time.mktime(untilTime.timetuple())
-    if type(fromTime) == datetime:
-        fromTime = time.mktime(fromTime.timetuple())
-
+    else:
+        untilTime = time.mktime(parseATTime(untilTime).timetuple())
+    fromTime = time.mktime(parseATTime(fromTime).timetuple())
     delta = int(untilTime) - int(fromTime)
+
     tick = delta / step
     noise = SimplexNoise(1024)
     noise.randomize()
