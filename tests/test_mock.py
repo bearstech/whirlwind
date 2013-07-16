@@ -4,6 +4,6 @@ from whirlwind import mock
 
 class MockTest(unittest.TestCase):
     def test_get(self):
-        m = mock.MockStore()
+        m = mock.MockStoreNoise()
         a = m.fetch('test', '-12hours')
-        print a
+        assert len(a[0]) == 1440
