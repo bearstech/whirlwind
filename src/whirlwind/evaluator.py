@@ -24,13 +24,13 @@ def evaluateTokens(store, requestContext, tokens):
         return store.fetch(tokens.pathExpression,
                            requestContext['startTime'],
                            requestContext['endTime'])
-        #return fetchData(requestContext, tokens.pathExpression)
 
     elif tokens.call:
-        func = SeriesFunctions[tokens.call.func]
-        args = [evaluateTokens(store, requestContext, arg)
-                for arg in tokens.call.args]
-        return func(requestContext, *args)
+        func = SeriesFunctions[tokens.call.funcname]
+        args = [evaluateTokens(store, requestContext, arg) for arg in tokens.call.args]
+        kwargs = dict([(kwarg.argname, evaluateTokens(store, requestContext, kwarg.args[0]))
+                    for kwarg in tokens.call.kwargs])
+        return func(requestContext, *args, **kwargs)
 
     elif tokens.number:
         if tokens.number.integer:

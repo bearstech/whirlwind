@@ -4,13 +4,29 @@ from whirlwind.mock import MockStoreStatic
 
 
 class EvaluatorTest(unittest.TestCase):
-    def test_tokens(self):
+
+    def _evaluator(self, tokens):
         store = MockStoreStatic()
-        tokens = 'averageSeries(a.b.1, d.e.3)'
         context = {
             'startTime': '-2days',
             'endTime': 'now',
         }
-        values = evaluator.evaluateTarget(store, context, tokens)
+        return evaluator.evaluateTarget(store, context, tokens)
+
+    def test_average(self):
+        values = self._evaluator('averageSeries(a.b.1, d.e.3)')
         for v in values[0]:
             assert v == 2.0
+
+    def test_sum(self):
+        values = self._evaluator('sumSeries(a.b.1, d.e.3)')
+        for v in values[0]:
+            assert v == 4.0
+
+    def test_diff(self):
+        values = self._evaluator('diffSeries(a.b.5, d.e.1)')
+        for v in values[0]:
+            assert v == 4.0
+        #values = self._evaluator('diffSeries(a.b.5,3)')
+        #for v in values[0]:
+            #assert v == 2.0
