@@ -27,6 +27,7 @@ class EvaluatorTest(unittest.TestCase):
         values = self._evaluator('diffSeries(a.b.5, d.e.1)')
         for v in values[0]:
             assert v == 4.0
+        # Doesn't work in the graphite project too
         #values = self._evaluator('diffSeries(a.b.5,3)')
         #for v in values[0]:
             #assert v == 2.0
