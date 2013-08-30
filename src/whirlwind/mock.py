@@ -52,6 +52,31 @@ class MockStoreStatic(AbstractStore):
         return [series]
 
 
+class MockStore(AbstractStore):
+
+    def __init__(self, store):
+        self.store = store
+
+    def fetch(self, pathExpr, startTime, endTime=None, step=30):
+        now = int(time.time())
+        if endTime is None:
+            endTime = now
+        else:
+            endTime = time.mktime(parseATTime(endTime).timetuple())
+        startTime = time.mktime(parseATTime(startTime).timetuple())
+        delta = int(endTime) - int(startTime)
+
+        tick = delta / step
+        s = self.store[pathExpr]
+        v = s + [None for a in range(tick - len(s))]
+        series = TimeSeries(pathExpr,
+                          startTime, endTime,
+                          step,
+                          v)
+        series.pathExpression = pathExpr  # hack to pass expressions through to render functions
+        return [series]
+
+
 if __name__ == '__main__':
     m = MockStore()
     print(m.fetch('test', '-1day', 'now', 30))
