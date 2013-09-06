@@ -7,6 +7,16 @@ from store import AbstractStore
 from datalib import TimeSeries
 
 
+def magic_time(stuff):
+    if type(stuff) == datetime:
+        return time.mktime(stuff.timetuple())
+    elif type(stuff) == str:
+        return time.mktime(parseATTime(stuff).timetuple())
+    elif type(stuff) == int:
+        return stuff
+    raise Exception("Bad argument type")
+
+
 class MockStoreNoise(AbstractStore):
 
     def fetch(self, pathExpr, startTime, endTime=None, step=30):
@@ -14,8 +24,8 @@ class MockStoreNoise(AbstractStore):
         if endTime is None:
             endTime = now
         else:
-            endTime = time.mktime(parseATTime(endTime).timetuple())
-        startTime = time.mktime(parseATTime(startTime).timetuple())
+            endTime = magic_time(endTime)
+        startTime = magic_time(startTime)
         delta = int(endTime) - int(startTime)
 
         tick = delta / step
