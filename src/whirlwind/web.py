@@ -1,16 +1,19 @@
-import sys
+import json
 
 import whisper
-from bottle import route, run, request, default_app
+from bottle import route, run, request, default_app, Response, get
 
 from __init__ import target_to_path
 from attime import parseATTime
-from mock import whisper_get
+from evaluator import evaluateTarget
+
+from whirlwind.mock import MockStore, MockStoreNoise
 
 folder = '/tmp/whisper/'  # sys.argv[1]
 
 
-@route("/render")
+
+@get("/render")
 def render():
     if 'from' in request.query:
         fromTime = parseATTime(request.query['from'])
@@ -21,17 +24,41 @@ def render():
     else:
         untilTime = parseATTime('now')
 
+    targets = request.query.getall('target')
 
-    target = request.query.target
-    if target.split('.')[0] == 'mock':
-        timeinfo, values = whisper_get(fromTime, untilTime, 30)
+    if 'format' in request.query:
+        format_ = request.query.format
     else:
-        path = target_to_path(folder, target)
-        timeinfo, values = whisper.fetch(path, fromTime, untilTime)
+        format_ = 'json'
 
-    return dict(values=values)
+    store_name = app.config['store']
+
+    if store_name == 'mock.noise':
+        store = MockStoreNoise()
+
+    requestContext = {'startTime': fromTime,
+                      'endTime': untilTime,
+                      'data': []
+                      }
+
+    series = []
+    for target in targets:
+        series.extend(evaluateTarget(store, requestContext, target))
+
+    if format_ == 'json':
+        r = []
+        for serie in series:
+            r.append({
+                "target": serie.name,
+                "datapoints": list(serie)
+            })
+        return json.dumps(r)
 
 app = default_app()
 
 if __name__ == "__main__":
-    run(host='localhost', port=5000, reloader=True, server="wsgiref", quiet=True)
+    app.config.update({
+        'store': 'mock.noise'
+    })
+    run(host='localhost', port=5000,
+        reloader=True, server="wsgiref", quiet=True)
