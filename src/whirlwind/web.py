@@ -41,18 +41,19 @@ def render():
                       'data': []
                       }
 
-    series = []
+    data = []
     for target in targets:
-        series.extend(evaluateTarget(store, requestContext, target))
+        if not target.strip():
+            continue
+        data.extend(evaluateTarget(store, requestContext, target))
 
     if format_ == 'json':
-        r = []
-        for serie in series:
-            r.append({
-                "target": serie.name,
-                "datapoints": list(serie)
-            })
-        return json.dumps(r)
+        series_data = []
+        for series in data:
+            timestamps = range(int(series.start), int(series.end), int(series.step))
+            datapoints = zip(series, timestamps)
+            series_data.append(dict(target=series.name, datapoints=datapoints))
+        return json.dumps(series_data)
 
 app = default_app()
 
