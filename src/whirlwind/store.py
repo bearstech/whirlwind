@@ -5,8 +5,8 @@ class AbstractStore(object):
         raise NotImplemented()
 
 
-
 class Store(AbstractStore):
+    """Consolidate values from a whisper store and carbon cache."""
 
     def __init__(self, drive, memory):
         pass
