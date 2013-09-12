@@ -3,3 +3,7 @@
 bin/
 include/
 lib/
+share/
+build/
+.tox
+MANIFEST
