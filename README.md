@@ -6,6 +6,8 @@ Reading Whisper database with Tornado.
 Status
 ------
 
+[![Build Status](https://travis-ci.org/bearstech/whirlwind.png?branch=master)](https://travis-ci.org/bearstech/whirlwind)
+
  * _ Time series computation
 
 Licence
