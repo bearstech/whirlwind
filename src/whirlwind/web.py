@@ -1,7 +1,7 @@
 import json
 
 import whisper
-from bottle import route, run, request, default_app, Response, get
+from bottle import route, run, request, default_app, response, get
 
 from __init__ import target_to_path
 from attime import parseATTime
@@ -11,6 +11,16 @@ from whirlwind.mock import MockStore, MockStoreNoise
 
 folder = '/tmp/whisper/'  # sys.argv[1]
 
+def format_raw(datas):
+    pass
+
+
+def format_json(datas):
+    pass
+
+
+def format_csv(datas):
+    pass
 
 
 @get("/render")
@@ -50,9 +60,11 @@ def render():
     if format_ == 'json':
         series_data = []
         for series in data:
-            timestamps = range(int(series.start), int(series.end), int(series.step))
+            timestamps = range(int(series.start),
+                               int(series.end), int(series.step))
             datapoints = zip(series, timestamps)
             series_data.append(dict(target=series.name, datapoints=datapoints))
+        response.content_type = "application/json"
         return json.dumps(series_data)
 
 app = default_app()
