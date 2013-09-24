@@ -15,6 +15,7 @@ limitations under the License."""
 import time
 
 from logger import log
+from readers import FetchInProgress
 
 
 class TimeSeries(list):
@@ -96,34 +97,42 @@ def recv_exactly(conn, num_bytes):
 
 
 # Data retrieval API
-def fetchData(requestContext, pathExpr):
+def fetchData(store, requestContext, pathExpr):
     seriesList = []
-    startTime = requestContext['startTime']
-    endTime = requestContext['endTime']
+    startTime = int(time.mktime(requestContext['startTime'].timetuple()))
+    endTime = int(time.mktime(requestContext['endTime'].timetuple()))
 
-    if requestContext['localOnly']:
-        store = LOCAL_STORE
-    else:
-        store = STORE
+    STORE = store
+    matching_nodes = STORE.find(pathExpr, startTime, endTime,
+                                local=requestContext['localOnly'])
+    fetches = [(node, node.fetch(startTime, endTime)) for node in matching_nodes if node.is_leaf]
 
-    for dbFile in store.find(pathExpr):
-        log.metric_access(dbFile.metric_path)
-        dbResults = dbFile.fetch( timestamp(startTime), timestamp(endTime) )
-        try:
-            cachedResults = CarbonLink.query(dbFile.real_metric)
-            results = mergeResults(dbResults, cachedResults)
-        except:
-            log.exception()
-            results = dbResults
+    for node, results in fetches:
+        if isinstance(results, FetchInProgress):
+            results = results.waitForResults()
 
         if not results:
+            log.info("render.datalib.fetchData :: no results for %s.fetch(%s, %s)" % (node, startTime, endTime))
             continue
 
         (timeInfo, values) = results
         (start, end, step) = timeInfo
-        series = TimeSeries(dbFile.metric_path, start, end, step, values)
-        series.pathExpression = pathExpr  # hack to pass expressions through to render functions
+
+        series = TimeSeries(node.path, start, end, step, values)
+        series.pathExpression = pathExpr # hack to pass expressions through to render functions
         seriesList.append(series)
+
+    # Prune empty series with duplicate metric paths to avoid showing empty graph elements for old whisper data
+    names = set([series.name for series in seriesList])
+    for name in names:
+        series_with_duplicate_names = [series for series in seriesList if series.name == name]
+        empty_duplicates = [series for series in series_with_duplicate_names if not nonempty(series)]
+
+        if series_with_duplicate_names == empty_duplicates and len(empty_duplicates) > 0: # if they're all empty
+            empty_duplicates.pop() # make sure we leave one in seriesList
+
+        for series in empty_duplicates:
+            seriesList.remove(series)
 
     return seriesList
 
@@ -154,3 +163,9 @@ def mergeResults(dbResults, cacheResults):
 def timestamp(datetime):
     "Convert a datetime object into epoch time"
     return time.mktime(datetime.timetuple())
+
+def nonempty(series):
+    for value in series:
+        if value is not None:
+            return True
+    return False

@@ -1,4 +1,7 @@
 class Logger(object):
-    pass
+    def metric_access(self, stuff):
+        pass
+    def exception(self):
+        pass
 
 log = Logger()

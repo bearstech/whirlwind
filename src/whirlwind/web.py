@@ -1,15 +1,16 @@
 import json
 
-import whisper
 from bottle import route, run, request, default_app, response, get
 
 from __init__ import target_to_path
 from attime import parseATTime
 from evaluator import evaluateTarget
+from storage import Store
 
-from whirlwind.mock import MockStore, MockStoreNoise
+from whirlwind.mock import MockFinder, MockNoiseReader
 
 folder = '/tmp/whisper/'  # sys.argv[1]
+
 
 def format_raw(datas):
     pass
@@ -41,14 +42,12 @@ def render():
     else:
         format_ = 'json'
 
-    store_name = app.config['store']
-
-    if store_name == 'mock.noise':
-        store = MockStoreNoise()
+    store = app.config['store']
 
     requestContext = {'startTime': fromTime,
                       'endTime': untilTime,
-                      'data': []
+                      'data': [],
+                      'localOnly': True
                       }
 
     data = []
@@ -70,8 +69,11 @@ def render():
 app = default_app()
 
 if __name__ == "__main__":
+    mock_reader = MockNoiseReader()
+    finder = MockFinder({'a.b.c': mock_reader})
+    store = Store([finder], hosts=None)
     app.config.update({
-        'store': 'mock.noise'
+        'store': store
     })
     run(host='localhost', port=5000,
         reloader=True, server="wsgiref", quiet=True)

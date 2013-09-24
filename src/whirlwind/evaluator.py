@@ -3,6 +3,7 @@ import time
 
 from grammar import grammar
 from datalib import fetchData, TimeSeries
+from whirlwind.storage import FindQuery
 
 
 def evaluateTarget(store, requestContext, target):
@@ -21,9 +22,7 @@ def evaluateTokens(store, requestContext, tokens):
         return evaluateTokens(store, requestContext, tokens.expression)
 
     elif tokens.pathExpression:
-        return store.fetch(tokens.pathExpression,
-                           requestContext['startTime'],
-                           requestContext['endTime'])
+        return fetchData(store, requestContext, tokens.pathExpression)
 
     elif tokens.call:
         func = SeriesFunctions[tokens.call.funcname]

@@ -1,11 +1,19 @@
 from webtest import TestApp
 
 from whirlwind import web
+from whirlwind.mock import MockFinder, MockNoiseReader
+from whirlwind.storage import Store
 
 
 def test_simple():
+    mock_reader = MockNoiseReader()
+    finder = MockFinder({
+        'a.b.c': mock_reader,
+        'd.e.f': mock_reader
+    })
+    store = Store([finder], hosts=None)
     web.app.config.update({
-        'store': 'mock.noise'
+        'store': store
     })
     app = TestApp(web.app)
     resp = app.get('/render?target=a.b.c&target=d.e.f&from=-1day')
