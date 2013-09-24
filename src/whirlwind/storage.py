@@ -8,6 +8,13 @@ from readers import MultiReader
 from finders import StandardFinder
 
 
+# FIXME
+class Settings(object):
+    pass
+settings = Settings()
+settings.FIND_CACHE_DURATION = 300
+settings.FIND_TOLERANCE = 2 * settings.FIND_CACHE_DURATION
+
 class Store:
     """
     A Store return a list of LeafNode.

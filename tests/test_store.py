@@ -10,4 +10,7 @@ class TestStore(unittest.TestCase):
         r = MockNoiseReader()
         m = MockFinder({'mock.a.b.c': r})
         store = Store([m])
-        print store.find('mock.a.*')
+        f = list(store.find('mock.a.*'))
+        assert len(f) == 1
+        f = store.find('a.*')
+        assert list(f) == []
