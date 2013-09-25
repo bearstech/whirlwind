@@ -7,3 +7,5 @@ share/
 build/
 .tox
 MANIFEST
+htmlcov/
+.coverage
