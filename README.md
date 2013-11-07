@@ -21,18 +21,18 @@ This projects, scratch built, forked or as is, can be used in the Whirlwind big 
 
  * [Kluczy](https://github.com/bearstech/kluczy) handles your SSL certificates.
  * [Diamond](https://github.com/bearstech/Diamond) sends some metrics.
- * [Statsd](https://github.com/bearstech/statsd) sends more metrics, the official one.
- * [Gstatsd](https://github.com/bearstech/gstatsd) the gevent's statsd fork, features are missing.
+ * [Statsd](https://github.com/bearstech/statsd) sends more metrics, the official one. SSL patch. [Pull request almost accepted](https://github.com/etsy/statsd/pull/333)
+ * [Gstatsd](https://github.com/bearstech/gstatsd) the gevent's statsd fork, features are missing. Pull request is sleeping.
  * [MySlow](https://github.com/bearstech/myslow) use mysql slow log to build metrics. POC.
  * [Whirlwind-Tornado](https://github.com/bearstech/whirlwind-tornado) is Tornado specific parts. Carbon clone with Redis. POC.
- * [Basho Bench](https://github.com/bearstech/basho_bench) benchmark carbon server. Patch accepted in official application.
+ * [Basho Bench](https://github.com/bearstech/basho_bench) benchmark carbon server. Pull request accepted in official application.
 
 Blog posts
 ----------
 
  * [Managing your own Certificate Authority, the declarative way](http://blog.bearstech.com/2013/11/managing-your-own-certificate-authority-the-declarative-way.html)
  * [Bench everything](http://blog.bearstech.com/2013/05/bench-everything.html)
- * [http://blog.bearstech.com/2013/03/authenticate-everything-with-ssl.html](http://blog.bearstech.com/2013/03/authenticate-everything-with-ssl.html)
+ * [Authenticate everything with ssl](http://blog.bearstech.com/2013/03/authenticate-everything-with-ssl.html)
 
 Status
 ------
